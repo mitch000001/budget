@@ -13,19 +13,35 @@
     <h1>Budget</h1>
     <div class="col-md-6">
       <h2>Ausgaben</h2>
-      <dl>
+      <form method="POST" action="/">
+        <label for="name">Bezeichnung</label>
+        <input type="text" name="name"/>
+        <label for="value">Wert</label>
+        <input type="text" name="value"/>
+        <input type="hidden" name="out" value="true"/>
+        <button type="submit">Neue Ausgabe hinzufügen</button>
+      </form>
+      <dl class="dl-horizontal">
         {{ range $key, $value := .Ausgaben }}
         <dt>{{ $key }}</dt>
-        <dd>{{ $value }} €</dd>
+        <dd>{{ printf "%4.2f" $value }} €</dd>
         {{ end }}
       </dl>
     </div>
     <div class="col-md-6">
       <h2>Einnahmen</h2>
-      <dl>
+      <form method="POST" action="/">
+        <label for="name">Bezeichnung</label>
+        <input type="text" name="name"/>
+        <label for="value">Wert</label>
+        <input type="text" name="value"/>
+        <input type="hidden" name="out" value="false"/>
+        <button type="submit">Neue Einnahme hinzufügen</button>
+      </form>
+      <dl class="dl-horizontal">
         {{ range $key, $value := .Einnahmen }}
         <dt>{{ $key }}</dt>
-        <dd>{{ $value }} €</dd>
+        <dd>{{ printf "%4.2f" $value }} €</dd>
         {{ end }}
       </dl>
     </div>

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"strconv"
 	"text/template"
 )
 
@@ -58,6 +59,32 @@ func budgetHandler(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error while parsing form: %T: %v\n")
+		}
+		params := r.PostForm
+		outParam := params.Get("out")
+		if outParam == "" {
+			log.Printf("Error while parsing form: 'out' can't be blank")
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+		out, err := strconv.ParseBool(outParam)
+		if err != nil {
+			log.Printf("Error while parsing form: %T: %v\n")
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+		key := params.Get("name")
+		valueParam := params.Get("value")
+		value, err := strconv.ParseFloat(valueParam, 64)
+		if err != nil {
+			log.Printf("Error while parsing form: %T: %v\n")
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+		if out {
+			budget.Ausgaben[key] = value
+		} else {
+			budget.Einnahmen[key] = value
 		}
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
