@@ -4,10 +4,17 @@
 {{ with .Budget }}
 <div class="col-md-6">
   {{ template "expenses" . }}
+  <hr/>
+  <strong>Summe: {{.Einnahmen.Sum }}</strong>
 </div>
 <div class="col-md-6">
   {{ template "earnings" . }}
+  <hr/>
+  <strong>Summe: {{.Einnahmen.Sum }}</strong>
 </div>
+<hr/>
+<hr/>
+<h2>Saldo: {{ .Balance }}</h2>
 {{end}}
 {{else}}
 <p>Verwalte dein Budget</p>
