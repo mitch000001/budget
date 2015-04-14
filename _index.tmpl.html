@@ -1,0 +1,44 @@
+{{define "index"}}
+<h1>Budget</h1>
+{{ if .LoggedIn }}
+{{ with .Budget }}
+<div class="col-md-6">
+  <h2>Ausgaben</h2>
+  <form method="POST" action="/">
+    <label for="name">Bezeichnung</label>
+    <input type="text" name="name"/>
+    <label for="value">Wert</label>
+    <input type="text" name="value"/>
+    <input type="hidden" name="out" value="true"/>
+    <button type="submit">Neue Ausgabe hinzufügen</button>
+  </form>
+  <dl class="dl-horizontal">
+    {{ range $key, $value := .Ausgaben }}
+    <dt>{{ $key }}</dt>
+    <dd>{{ printf "%4.2f" $value }} €</dd>
+    {{ end }}
+  </dl>
+</div>
+<div class="col-md-6">
+  <h2>Einnahmen</h2>
+  <form method="POST" action="/">
+    <label for="name">Bezeichnung</label>
+    <input type="text" name="name"/>
+    <label for="value">Wert</label>
+    <input type="text" name="value"/>
+    <input type="hidden" name="out" value="false"/>
+    <button type="submit">Neue Einnahme hinzufügen</button>
+  </form>
+  <dl class="dl-horizontal">
+    {{ range $key, $value := .Einnahmen }}
+    <dt>{{ $key }}</dt>
+    <dd>{{ printf "%4.2f" $value }} €</dd>
+    {{ end }}
+  </dl>
+</div>
+{{end}}
+{{else}}
+<p>Verwalte dein Budget</p>
+<a href="/login">Einloggen um anzufangen</a>
+{{end}}
+{{end}}
