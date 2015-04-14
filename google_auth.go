@@ -85,7 +85,7 @@ func googleRedirectHandler(config *oauth2.Config) http.HandlerFunc {
 		user := NewUser(idToken, token)
 		session.User = user
 		defer func() {
-			http.SetCookie(w, newSessionCookie(session.id))
+			http.SetCookie(w, NewSessionCookie(session.id))
 			http.Redirect(w, r, session.location, http.StatusFound)
 		}()
 		client := config.Client(oauth2.NoContext, token)
@@ -100,7 +100,6 @@ func googleRedirectHandler(config *oauth2.Config) http.HandlerFunc {
 			log.Printf("Error %T: %v\n", err, err)
 			return
 		}
-		log.Printf("Google Profile: %+#v\n", profile)
 		session.User.SetProfile(profile)
 	}
 }
@@ -114,7 +113,7 @@ func decodeGoogleProfile(r io.Reader) (*googleProfile, error) {
 	return &profile, nil
 }
 
-func newSessionCookie(sessionId string) *http.Cookie {
+func NewSessionCookie(sessionId string) *http.Cookie {
 	return &http.Cookie{Name: "budget", Value: sessionId, Expires: time.Now().Add(5 * 24 * time.Hour)}
 }
 
@@ -128,7 +127,6 @@ func decode(payload string) (*googleIdToken, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Decoded Google auth payload: %s\n", string(decoded))
 	c := &googleIdToken{}
 	err = json.NewDecoder(bytes.NewBuffer(decoded)).Decode(c)
 	return c, err

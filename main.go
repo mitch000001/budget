@@ -52,25 +52,14 @@ func main() {
 		Endpoint:     google.Endpoint,
 		RedirectURL:  host + "/google_oauth2redirect",
 	}
-	budget = newBudget()
-	http.Handle("/", http.HandlerFunc(indexHandler))
+	budget = NewBudget()
+	http.Handle("/", http.HandlerFunc(indexHandler()))
+	http.Handle("/favicon.ico", http.HandlerFunc(fileHandler))
 	http.Handle("/login", getHandler(loginHandler()))
 	http.Handle("/logout", getHandler(authHandler(logoutHandler())))
 	http.HandleFunc("/google_login", googleLoginHandler(googleOauth2Config))
 	http.HandleFunc("/google_oauth2redirect", getHandler(googleRedirectHandler(googleOauth2Config)))
 	log.Fatal(http.ListenAndServe(":"+httpPort, nil))
-}
-
-func newBudget() *Budget {
-	return &Budget{
-		Einnahmen: make(map[string]float64),
-		Ausgaben:  make(map[string]float64),
-	}
-}
-
-type Budget struct {
-	Einnahmen map[string]float64
-	Ausgaben  map[string]float64
 }
 
 func MustString(str string, err error) string {
@@ -79,65 +68,67 @@ func MustString(str string, err error) string {
 	}
 	return str
 }
+func fileHandler(w http.ResponseWriter, r *http.Request) {}
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, _ := r.Cookie("budget")
-	session := GetSessionFromCookie(cookie)
-	log.Printf("Session: %+#v\n", session)
-	if r.Method == "GET" {
-		if r.URL.Path != "/" {
+func indexHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, _ := r.Cookie("budget")
+		session := GetSessionFromCookie(cookie)
+		if r.Method == "GET" {
+			if r.URL.Path != "/" {
+				if session != nil {
+					session.URL = r.URL
+					session.AddError(fmt.Errorf("Die eingegebene Seite existiert nicht: '%s'", r.URL.Path))
+				}
+				http.Redirect(w, r, "/", http.StatusFound)
+				return
+			}
+			var page *PageObject
 			if session != nil {
 				session.URL = r.URL
-				session.AddError(fmt.Errorf("Die eingegebene Seite existiert nicht: '%s'", r.URL.Path))
+				page = PageForSession(session)
+				page.Set("Budget", budget)
+			} else {
+				page = NewPageObject()
+				page.Set("RequestPath", "")
+			}
+			renderTemplate(w, "index", page)
+			return
+		}
+		if r.Method == "POST" {
+			err := r.ParseForm()
+			if err != nil {
+				log.Printf("Error while parsing form: %T: %v\n")
+			}
+			params := r.PostForm
+			outParam := params.Get("out")
+			if outParam == "" {
+				log.Printf("Error while parsing form: 'out' can't be blank")
+				http.Redirect(w, r, "/", http.StatusFound)
+				return
+			}
+			out, err := strconv.ParseBool(outParam)
+			if err != nil {
+				log.Printf("Error while parsing form: %T: %v\n")
+				http.Redirect(w, r, "/", http.StatusFound)
+				return
+			}
+			key := params.Get("name")
+			valueParam := params.Get("value")
+			value, err := strconv.ParseFloat(valueParam, 64)
+			if err != nil {
+				log.Printf("Error while parsing form: %T: %v\n")
+				http.Redirect(w, r, "/", http.StatusFound)
+				return
+			}
+			if out {
+				budget.Ausgaben[key] = value
+			} else {
+				budget.Einnahmen[key] = value
 			}
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
-		var page *PageObject
-		if session != nil {
-			session.URL = r.URL
-			page = PageForSession(session)
-			page.Set("Budget", budget)
-		} else {
-			page = NewPageObject()
-			page.Set("RequestPath", "")
-		}
-		renderTemplate(w, "index", page)
-		return
-	}
-	if r.Method == "POST" {
-		err := r.ParseForm()
-		if err != nil {
-			log.Printf("Error while parsing form: %T: %v\n")
-		}
-		params := r.PostForm
-		outParam := params.Get("out")
-		if outParam == "" {
-			log.Printf("Error while parsing form: 'out' can't be blank")
-			http.Redirect(w, r, "/", http.StatusFound)
-			return
-		}
-		out, err := strconv.ParseBool(outParam)
-		if err != nil {
-			log.Printf("Error while parsing form: %T: %v\n")
-			http.Redirect(w, r, "/", http.StatusFound)
-			return
-		}
-		key := params.Get("name")
-		valueParam := params.Get("value")
-		value, err := strconv.ParseFloat(valueParam, 64)
-		if err != nil {
-			log.Printf("Error while parsing form: %T: %v\n")
-			http.Redirect(w, r, "/", http.StatusFound)
-			return
-		}
-		if out {
-			budget.Ausgaben[key] = value
-		} else {
-			budget.Einnahmen[key] = value
-		}
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
 	}
 }
 

@@ -19,6 +19,13 @@ func (u *User) Email() string {
 	return u.idToken.Email
 }
 
+func (u *User) String() string {
+	if u.profile != nil {
+		return u.profile.DisplayName
+	}
+	return u.idToken.Email
+}
+
 func (u *User) SetProfile(profile *googleProfile) {
 	u.profile = profile
 }
