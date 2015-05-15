@@ -59,6 +59,7 @@ func main() {
 	http.Handle("/logout", getHandler(authHandler(logoutHandler())))
 	http.HandleFunc("/google_login", googleLoginHandler(googleOauth2Config))
 	http.HandleFunc("/google_oauth2redirect", getHandler(googleRedirectHandler(googleOauth2Config)))
+	log.Printf("Listening on port %s\n", httpPort)
 	log.Fatal(http.ListenAndServe(":"+httpPort, nil))
 }
 
