@@ -20,9 +20,9 @@ func (b *Budget) Balance() float64 {
 
 type Earnings map[string]float64
 
-func (e *Earnings) Sum() float64 {
+func (e Earnings) Sum() float64 {
 	sum := 0.0
-	for _, val := range *e {
+	for _, val := range e {
 		sum += val
 	}
 	return sum
@@ -30,9 +30,9 @@ func (e *Earnings) Sum() float64 {
 
 type Expenses map[string]float64
 
-func (e *Expenses) Sum() float64 {
+func (e Expenses) Sum() float64 {
 	sum := 0.0
-	for _, val := range *e {
+	for _, val := range e {
 		sum += val
 	}
 	return sum
