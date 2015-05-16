@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -26,17 +27,33 @@ var (
 	funcMap          = template.FuncMap{
 		"startsWith": strings.HasPrefix,
 	}
-	layout      = template.Must(template.ParseFiles("./layout.tmpl.html")).Funcs(funcMap)
-	partialTmpl = template.Must(layout.ParseGlob("./_*.tmpl.html"))
+	templatePath           string
+	layoutPattern          string
+	partialTemplatePattern string
+	layout                 *template.Template
+	partialTmpl            *template.Template
 )
+
+func mustString(str string, err error) string {
+	if err != nil {
+		panic(err)
+	}
+	return str
+}
 
 func init() {
 	flag.BoolVar(&debugMode, "debug", false, "-debug")
 	flag.StringVar(&httpPort, "http.port", "8000", "-http.port=8000")
+	defaultPath := filepath.Join(mustString(os.Getwd()), "templates/")
+	flag.StringVar(&templatePath, "template.path", defaultPath, fmt.Sprintf("template.path=%s", defaultPath))
+	flag.Parse()
+	layoutPattern = filepath.Join(templatePath, "layout.html.tmpl")
+	partialTemplatePattern = filepath.Join(templatePath, "_*.tmpl")
+	layout = template.Must(template.ParseGlob(layoutPattern)).Funcs(funcMap)
+	partialTmpl = template.Must(layout.ParseGlob(partialTemplatePattern))
 }
 
 func main() {
-	flag.Parse()
 	googleClientId := os.Getenv("GOOGLE_CLIENTID")
 	googleClientSecret := os.Getenv("GOOGLE_CLIENTSECRET")
 	hostAddress := strings.TrimLeft(strings.TrimSuffix(httpAddr, ":"), "https://") + ":" + strings.TrimPrefix(httpPort, ":")
