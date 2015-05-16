@@ -1,15 +1,17 @@
 package main
 
+import "fmt"
+
 func NewBudget() *Budget {
 	return &Budget{
-		Einnahmen: make(map[string]float64),
-		Ausgaben:  make(map[string]float64),
+		Einnahmen: NewBudgetColumn(),
+		Ausgaben:  NewBudgetColumn(),
 	}
 }
 
 type Budget struct {
-	Einnahmen Earnings
-	Ausgaben  Expenses
+	Einnahmen BudgetColumn
+	Ausgaben  BudgetColumn
 }
 
 func (b *Budget) Balance() float64 {
@@ -18,22 +20,35 @@ func (b *Budget) Balance() float64 {
 	return earnings - expenses
 }
 
-type Earnings map[string]float64
+func NewBudgetColumn() BudgetColumn {
+	entry := make(BudgetColumn)
+	return entry
+}
 
-func (e Earnings) Sum() float64 {
+type BudgetColumn map[string]*BudgetColumnEntry
+
+func (b BudgetColumn) Sum() float64 {
 	sum := 0.0
-	for _, val := range e {
-		sum += val
+	for _, columnEntry := range b {
+		sum += columnEntry.Value()
 	}
 	return sum
 }
 
-type Expenses map[string]float64
-
-func (e Expenses) Sum() float64 {
-	sum := 0.0
-	for _, val := range e {
-		sum += val
+func NewBudgetColumnEntry(val float64) *BudgetColumnEntry {
+	return &BudgetColumnEntry{
+		value: val,
 	}
-	return sum
+}
+
+type BudgetColumnEntry struct {
+	value float64
+}
+
+func (b *BudgetColumnEntry) Value() float64 {
+	return b.value
+}
+
+func (b *BudgetColumnEntry) String() string {
+	return fmt.Sprintf("%.2f", b.value)
 }

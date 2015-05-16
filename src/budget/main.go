@@ -140,9 +140,9 @@ func indexHandler() http.HandlerFunc {
 				return
 			}
 			if out {
-				budget.Ausgaben[key] = value
+				budget.Ausgaben[key] = NewBudgetColumnEntry(value)
 			} else {
-				budget.Einnahmen[key] = value
+				budget.Einnahmen[key] = NewBudgetColumnEntry(value)
 			}
 			http.Redirect(w, r, "/", http.StatusFound)
 			return

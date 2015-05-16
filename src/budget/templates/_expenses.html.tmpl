@@ -2,9 +2,9 @@
 <h2>Ausgaben</h2>
 {{ template "expenses-form" .}}
 <dl class="dl-horizontal">
-  {{ range $key, $value := .Ausgaben }}
+  {{ range $key, $entry := .Ausgaben }}
   <dt>{{ $key }}</dt>
-  <dd>{{ printf "%4.2f" $value }} €</dd>
+  <dd>{{ printf "%4.2f" $entry.Value }} €</dd>
   {{ end }}
 </dl>
 {{ end }}
