@@ -35,18 +35,24 @@ func (b BudgetColumn) Sum() float64 {
 	return sum
 }
 
-func NewBudgetColumnEntry(val float64) *BudgetColumnEntry {
+func NewBudgetColumnEntry(val float64, bookingDate ShortDate) *BudgetColumnEntry {
 	return &BudgetColumnEntry{
-		value: val,
+		value:       val,
+		bookingDate: bookingDate,
 	}
 }
 
 type BudgetColumnEntry struct {
-	value float64
+	value       float64
+	bookingDate ShortDate
 }
 
 func (b *BudgetColumnEntry) Value() float64 {
 	return b.value
+}
+
+func (b *BudgetColumnEntry) BookingDate() ShortDate {
+	return b.bookingDate
 }
 
 func (b *BudgetColumnEntry) String() string {

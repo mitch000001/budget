@@ -13,6 +13,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -139,10 +140,17 @@ func indexHandler() http.HandlerFunc {
 				http.Redirect(w, r, "/", http.StatusFound)
 				return
 			}
+			dateParam := params.Get("date")
+			date, err := time.Parse("2006-01-02", dateParam)
+			if err != nil {
+				log.Printf("Error while parsing form: %T: %v\n")
+				http.Redirect(w, r, "/", http.StatusFound)
+				return
+			}
 			if out {
-				budget.Ausgaben[key] = NewBudgetColumnEntry(value)
+				budget.Ausgaben[key] = NewBudgetColumnEntry(value, ShortDate{date})
 			} else {
-				budget.Einnahmen[key] = NewBudgetColumnEntry(value)
+				budget.Einnahmen[key] = NewBudgetColumnEntry(value, ShortDate{date})
 			}
 			http.Redirect(w, r, "/", http.StatusFound)
 			return

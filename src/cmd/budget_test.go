@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestNewBudget(t *testing.T) {
 	budget := NewBudget()
@@ -24,10 +27,10 @@ func TestNewBudget(t *testing.T) {
 func TestBudgetBalance(t *testing.T) {
 	budget := NewBudget()
 
-	budget.Einnahmen["foo"] = NewBudgetColumnEntry(400)
-	budget.Einnahmen["bar"] = NewBudgetColumnEntry(300)
-	budget.Ausgaben["baz"] = NewBudgetColumnEntry(100)
-	budget.Ausgaben["qux"] = NewBudgetColumnEntry(900)
+	budget.Einnahmen["foo"] = NewBudgetColumnEntry(400, ShortDate{})
+	budget.Einnahmen["bar"] = NewBudgetColumnEntry(300, ShortDate{})
+	budget.Ausgaben["baz"] = NewBudgetColumnEntry(100, ShortDate{})
+	budget.Ausgaben["qux"] = NewBudgetColumnEntry(900, ShortDate{})
 
 	balance := budget.Balance()
 
@@ -51,8 +54,8 @@ func TestNewBudgetColumn(t *testing.T) {
 func TestBudgetColumnSum(t *testing.T) {
 	column := NewBudgetColumn()
 
-	column["foo"] = NewBudgetColumnEntry(23)
-	column["bar"] = NewBudgetColumnEntry(55.0)
+	column["foo"] = NewBudgetColumnEntry(23, ShortDate{})
+	column["bar"] = NewBudgetColumnEntry(55.0, ShortDate{})
 
 	sum := column.Sum()
 
@@ -63,7 +66,7 @@ func TestBudgetColumnSum(t *testing.T) {
 }
 
 func TestNewBudgetColumnEntry(t *testing.T) {
-	entry := NewBudgetColumnEntry(22)
+	entry := NewBudgetColumnEntry(22, Date(2015, 01, 01, time.Local))
 
 	if entry == nil {
 		t.Logf("Expected entry not to be nil")
@@ -74,10 +77,16 @@ func TestNewBudgetColumnEntry(t *testing.T) {
 		t.Logf("Expected value to equal %f, got %f\n", 22, entry.value)
 		t.Fail()
 	}
+
+	expectedDate := Date(2015, 01, 01, time.Local)
+	if entry.bookingDate != expectedDate {
+		t.Logf("Expected value to equal %q, got %q\n", expectedDate, entry.bookingDate)
+		t.Fail()
+	}
 }
 
 func TestBudgetColumnEntryValue(t *testing.T) {
-	entry := NewBudgetColumnEntry(22)
+	entry := NewBudgetColumnEntry(22, ShortDate{})
 
 	if entry.Value() != 22 {
 		t.Logf("Expected Value() to equal %f, got %f\n", 22, entry.Value())
@@ -85,8 +94,18 @@ func TestBudgetColumnEntryValue(t *testing.T) {
 	}
 }
 
+func TestBudgetColumnEntryBookingDate(t *testing.T) {
+	entry := NewBudgetColumnEntry(22, Date(2015, 01, 01, time.Local))
+
+	expectedDate := Date(2015, 01, 01, time.Local)
+	if entry.BookingDate() != expectedDate {
+		t.Logf("Expected value to equal %q, got %q\n", expectedDate, entry.BookingDate())
+		t.Fail()
+	}
+}
+
 func TestBudgetColumnEntryString(t *testing.T) {
-	entry := NewBudgetColumnEntry(2.2)
+	entry := NewBudgetColumnEntry(2.2, ShortDate{})
 
 	if entry.String() != "2.20" {
 		t.Logf("Expected Value() to equal %q, got %q\n", "2.20", entry.String())
