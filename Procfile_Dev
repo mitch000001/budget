@@ -1,0 +1,1 @@
+web: bin/budget -template.path src/cmd/budget/templates

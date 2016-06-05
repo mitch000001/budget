@@ -19,6 +19,8 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
+//go:generate go-bindata -o assets.go templates/
+
 var (
 	budget    *Budget
 	httpPort  string
@@ -28,11 +30,17 @@ var (
 	funcMap          = template.FuncMap{
 		"startsWith": strings.HasPrefix,
 	}
+	applicationEnv         string
 	templatePath           string
 	layoutPattern          string
 	partialTemplatePattern string
 	layout                 *template.Template
 	partialTmpl            *template.Template
+)
+
+const (
+	developmentEnv string = "DEVELOPMENT"
+	productionEnv  string = "PRODUCTION"
 )
 
 func mustString(str string, err error) string {
@@ -48,10 +56,19 @@ func init() {
 	defaultPath := filepath.Join(mustString(os.Getwd()), "templates/")
 	flag.StringVar(&templatePath, "template.path", defaultPath, fmt.Sprintf("template.path=%s", defaultPath))
 	flag.Parse()
-	layoutPattern = filepath.Join(templatePath, "layout.html.tmpl")
-	partialTemplatePattern = filepath.Join(templatePath, "_*.tmpl")
-	layout = template.Must(template.ParseGlob(layoutPattern)).Funcs(funcMap)
-	partialTmpl = template.Must(layout.ParseGlob(partialTemplatePattern))
+	applicationEnv = os.Getenv("APPLICATION_ENV")
+	if applicationEnv == developmentEnv {
+		layoutPattern = filepath.Join(templatePath, "layout.html.tmpl")
+		partialTemplatePattern = filepath.Join(templatePath, "_*.tmpl")
+		layout = template.Must(template.ParseGlob(layoutPattern)).Funcs(funcMap)
+		partialTmpl = template.Must(layout.ParseGlob(partialTemplatePattern))
+	} else {
+		layout = template.New("layout")
+		for _, tmplName := range AssetNames() {
+			tmpl := string(MustAsset(tmplName))
+			template.Must(layout.Parse(tmpl))
+		}
+	}
 }
 
 func main() {
@@ -87,6 +104,7 @@ func MustString(str string, err error) string {
 	}
 	return str
 }
+
 func fileHandler(w http.ResponseWriter, r *http.Request) {}
 
 func indexHandler() http.HandlerFunc {

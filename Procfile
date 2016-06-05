@@ -1,1 +1,1 @@
-web: budget
+web: bin/budget
